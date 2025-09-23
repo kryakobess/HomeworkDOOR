@@ -8,7 +8,7 @@ public class SmallestDegreeLastGraphColorist extends AbstractGreedyGraphColorist
 
     @Override
     protected SequencedCollection<Integer> makeOrdering(final Map<Integer, Set<Integer>> graph) {
-        var copyGraph = Map.copyOf(graph);
+        var copyGraph = copyGraph(graph);
         Deque<Integer> smallestDegreeLastOrdering = new ArrayDeque<>();
 
         DecreaseKeyBinaryHeap<Integer> priorityQueue = new DecreaseKeyBinaryHeap<>();
@@ -33,6 +33,12 @@ public class SmallestDegreeLastGraphColorist extends AbstractGreedyGraphColorist
             priorityQueue.decreaseKey(neighbor);
         }
         graph.remove(vertex);
+    }
+
+    private Map<Integer, Set<Integer>> copyGraph(final Map<Integer, Set<Integer>> original) {
+        Map<Integer, Set<Integer>> copy = new HashMap<>();
+        original.forEach((key, value) -> copy.computeIfAbsent(key, k -> new HashSet<>()).addAll(value));
+        return copy;
     }
 
 }
