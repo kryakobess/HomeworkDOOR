@@ -12,10 +12,11 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.homework.door.lab1.ColoristValidator.validateColoring;
 
-class SmallestDegreeLastGraphColoristTest {
+class SmallestDegreeLastGraphColoristParameterizedTest {
 
-    private final GraphColorist colorist = new SmallestDegreeLastGraphColorist(); // Замените на ваш класс
+    private final GraphColorist colorist = new SmallestDegreeLastGraphColorist();
 
     @ParameterizedTest
     @MethodSource("provideBasicGraphs")
@@ -38,15 +39,15 @@ class SmallestDegreeLastGraphColoristTest {
                 Arguments.of("Empty graph", 0, List.of(), 0),
                 Arguments.of("Single vertex", 1, List.of(), 1),
                 Arguments.of("Two independent vertices", 2, List.of(), 1),
-                Arguments.of("Two connected vertices", 2, List.of(new Edge(0, 1)), 2),
+                Arguments.of("Two connected vertices", 2, List.of(new Edge(1, 2)), 2),
                 Arguments.of("Triangle (K3)", 3, List.of(
-                        new Edge(0, 1), new Edge(1, 2), new Edge(2, 0)
+                        new Edge(1, 2), new Edge(2, 3), new Edge(3, 1)
                 ), 3),
                 Arguments.of("Path graph of 3 vertices", 3, List.of(
-                        new Edge(0, 1), new Edge(1, 2)
+                        new Edge(1, 2), new Edge(2, 3)
                 ), 2),
                 Arguments.of("Square (C4)", 4, List.of(
-                        new Edge(0, 1), new Edge(1, 2), new Edge(2, 3), new Edge(3, 0)
+                        new Edge(1, 2), new Edge(2, 3), new Edge(3, 4), new Edge(4, 1)
                 ), 2)
         );
     }
@@ -88,17 +89,17 @@ class SmallestDegreeLastGraphColoristTest {
     private static Stream<Arguments> provideBipartiteGraphs() {
         return Stream.of(
                 Arguments.of("Simple bipartite", 4, List.of(
-                        new Edge(0, 2), new Edge(0, 3), new Edge(1, 2), new Edge(1, 3)
+                        new Edge(1, 3), new Edge(1, 4), new Edge(2, 3), new Edge(2, 4)
                 )),
                 Arguments.of("Star graph K1,4", 5, List.of(
-                        new Edge(0, 1), new Edge(0, 2), new Edge(0, 3), new Edge(0, 4)
+                        new Edge(1, 2), new Edge(1, 3), new Edge(1, 4), new Edge(1, 5)
                 )),
                 Arguments.of("Complete bipartite K2,3", 5, List.of(
-                        new Edge(0, 3), new Edge(0, 4), new Edge(1, 3), new Edge(1, 4), new Edge(2, 3), new Edge(2, 4)
+                        new Edge(1, 4), new Edge(1, 5), new Edge(2, 4), new Edge(2, 5), new Edge(3, 4), new Edge(3, 5)
                 )),
                 Arguments.of("Even cycle C6", 6, List.of(
-                        new Edge(0, 1), new Edge(1, 2), new Edge(2, 3),
-                        new Edge(3, 4), new Edge(4, 5), new Edge(5, 0)
+                        new Edge(1, 2), new Edge(2, 3), new Edge(3, 4),
+                        new Edge(4, 5), new Edge(5, 6), new Edge(6, 1)
                 ))
         );
     }
@@ -146,75 +147,35 @@ class SmallestDegreeLastGraphColoristTest {
     private static Stream<Arguments> provideComplexGraphs() {
         return Stream.of(
                 Arguments.of("Wheel graph W4", 5, List.of(
-                        new Edge(0, 1), new Edge(0, 2), new Edge(0, 3), new Edge(0, 4),
-                        new Edge(1, 2), new Edge(2, 3), new Edge(3, 4), new Edge(4, 1)
+                        new Edge(1, 2), new Edge(1, 3), new Edge(1, 4), new Edge(1, 5),
+                        new Edge(2, 3), new Edge(3, 4), new Edge(4, 5), new Edge(5, 2)
                 ), 4),
                 Arguments.of("Petersen graph", 10, List.of(
                         // Внешний цикл
-                        new Edge(0, 1), new Edge(1, 2), new Edge(2, 3), new Edge(3, 4), new Edge(4, 0),
+                        new Edge(1, 2), new Edge(2, 3), new Edge(3, 4), new Edge(4, 5), new Edge(5, 1),
                         // Внутренний цикл
-                        new Edge(5, 7), new Edge(7, 9), new Edge(9, 6), new Edge(6, 8), new Edge(8, 5),
+                        new Edge(6, 8), new Edge(8, 10), new Edge(10, 7), new Edge(7, 9), new Edge(9, 6),
                         // Соединения
-                        new Edge(0, 5), new Edge(1, 6), new Edge(2, 7), new Edge(3, 8), new Edge(4, 9)
+                        new Edge(1, 6), new Edge(2, 7), new Edge(3, 8), new Edge(4, 9), new Edge(5, 10)
                 ), 3), // Петерсен граф 3-раскрашиваем
                 Arguments.of("Tree graph", 7, List.of(
-                        new Edge(0, 1), new Edge(0, 2), new Edge(1, 3), new Edge(1, 4),
-                        new Edge(2, 5), new Edge(2, 6)
+                        new Edge(1, 2), new Edge(1, 3), new Edge(2, 4), new Edge(2, 5),
+                        new Edge(3, 6), new Edge(3, 7)
                 ), 2) // Деревья 2-раскрашиваемы
         );
     }
 
     private List<Edge> generateCompleteGraph(int n) {
-        return java.util.stream.IntStream.range(0, n)
+        return java.util.stream.IntStream.range(1, n + 1)
                 .boxed()
-                .flatMap(i -> java.util.stream.IntStream.range(i + 1, n)
+                .flatMap(i -> java.util.stream.IntStream.range(i + 1, n + 1)
                         .mapToObj(j -> new Edge(i, j)))
                 .toList();
     }
 
     private List<Edge> generateCycleGraph(int n) {
-        return java.util.stream.IntStream.range(0, n)
-                .mapToObj(i -> new Edge(i, (i + 1) % n))
+        return java.util.stream.IntStream.range(1, n + 1)
+                .mapToObj(i -> new Edge(i, i % n + 1))
                 .toList();
-    }
-
-    private void validateColoring(int verticesCount, List<Edge> edges, ColoringResult result, String description) {
-        // Создаем массив цветов для каждой вершины
-        int[] vertexColors = new int[verticesCount];
-        Arrays.fill(vertexColors, -1);
-
-        for (int color = 0; color < result.verticesGroupedByColor().size(); color++) {
-            for (int vertex : result.verticesGroupedByColor().get(color)) {
-                assertTrue(vertex >= 0 && vertex < verticesCount,
-                        description + ": Vertex index out of bounds");
-                assertEquals(-1, vertexColors[vertex],
-                        description + ": Vertex " + vertex + " colored multiple times");
-                vertexColors[vertex] = color;
-            }
-        }
-
-        // Проверяем, что все вершины раскрашены
-        for (int i = 0; i < verticesCount; i++) {
-            assertNotEquals(-1, vertexColors[i],
-                    description + ": Vertex " + i + " not colored");
-        }
-
-        // Проверяем, что смежные вершины имеют разные цвета
-        for (Edge edge : edges) {
-            int from = edge.from();
-            int to = edge.to();
-            assertNotEquals(vertexColors[from], vertexColors[to],
-                    description + ": Adjacent vertices " + from + " and " + to + " have same color");
-        }
-    }
-
-    // Вспомогательный метод для поиска цвета вершины (для непараметризированных тестов)
-    private int findColorForVertex(ColoringResult result, int vertex) {
-        for (int color = 0; color < result.verticesGroupedByColor().size(); color++) {
-            if (result.verticesGroupedByColor().get(color).contains(vertex)) {
-                return color;
-            }
-        }
-        return -1;
     }
 }

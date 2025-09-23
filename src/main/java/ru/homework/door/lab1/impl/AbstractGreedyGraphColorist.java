@@ -60,7 +60,7 @@ public abstract class AbstractGreedyGraphColorist implements GraphColorist {
             graph.get(edge.to()).add(edge.from());
         }
 
-        IntStream.range(0, vertices)
+        IntStream.range(1, vertices + 1)
                 .forEach(v -> graph.putIfAbsent(v, new HashSet<>()));
 
         return graph;
