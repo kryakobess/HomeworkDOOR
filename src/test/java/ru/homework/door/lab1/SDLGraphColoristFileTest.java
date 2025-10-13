@@ -25,7 +25,14 @@ class SDLGraphColoristFileTest {
     void testDataFromFile(String fileName, int expectedColors) {
         GraphData graphData = parseGraphFile(Paths.get("src", "main", "resources", "vertex_coloring", fileName).toFile());
 
-        ColoringResult result = colorist.colorGraph(graphData.verticesCount, graphData.edges);
+        long startTime = System.nanoTime();
+
+        ColoringResult result;
+        result = colorist.colorGraph(graphData.verticesCount, graphData.edges);
+
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime);
+        System.out.printf("Время выполнения = %.5f сек\n", duration / 1_000_000_000.0);
 
         assertNotNull(result, "Результат не должен быть null");
         assertNotNull(result.verticesGroupedByColor(), "Список цветов не должен быть null");
