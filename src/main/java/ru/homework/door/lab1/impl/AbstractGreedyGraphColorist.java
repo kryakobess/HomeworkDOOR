@@ -8,13 +8,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static ru.homework.door.common.utils.GraphUtils.buildGraph;
+
 public abstract class AbstractGreedyGraphColorist implements GraphColorist {
 
     private static final int FIRST_COLOR = 1;
 
     @Override
     public ColoringResult colorGraph(Integer verticesCount, List<Edge> edges) {
-        Map<Integer, Set<Integer>> graph = getGraph(verticesCount, edges);
+        Map<Integer, Set<Integer>> graph = buildGraph(verticesCount, edges);
 
         SequencedCollection<Integer> smallestDegreeLastOrdering = makeOrdering(graph);
         Map<Integer, Integer> vertexColor = colorVertices(smallestDegreeLastOrdering, graph);
@@ -50,21 +52,6 @@ public abstract class AbstractGreedyGraphColorist implements GraphColorist {
         return color;
     }
 
-    private Map<Integer, Set<Integer>> getGraph(Integer vertices, List<Edge> edges) {
-        Map<Integer, Set<Integer>> graph = new HashMap<>();
-        for (var edge : edges) {
-            graph.putIfAbsent(edge.from(), new HashSet<>());
-            graph.putIfAbsent(edge.to(), new HashSet<>());
-
-            graph.get(edge.from()).add(edge.to());
-            graph.get(edge.to()).add(edge.from());
-        }
-
-        IntStream.range(1, vertices + 1)
-                .forEach(v -> graph.putIfAbsent(v, new HashSet<>()));
-
-        return graph;
-    }
 
     private List<List<Integer>> getVerticesGroupedByColors(Map<Integer, Integer> vertexColor) {
         return new ArrayList<>(
