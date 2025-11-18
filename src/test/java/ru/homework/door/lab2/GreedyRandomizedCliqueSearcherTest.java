@@ -60,7 +60,7 @@ class GreedyRandomizedCliqueSearcherTest {
                 graphData.verticesCount,
                 graphData.edges,
                 0.5,  // alpha параметр
-                100  // maxIterations параметр
+                1000  // maxIterations параметр
         );
 
         long endTime = System.nanoTime();
