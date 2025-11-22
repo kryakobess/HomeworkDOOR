@@ -2,35 +2,89 @@ package ru.homework.door.lab3.impl;
 
 import ru.homework.door.common.structures.Pair;
 import ru.homework.door.lab3.CliqueSearchImprover;
+import ru.homework.door.lab3.dto.Tabu;
 
 import java.util.*;
 
 public class TabuSearchImprover implements CliqueSearchImprover {
 
     private final static int NO_CANDIDATE = -1;
+    private final static int NO_IMPROVEMENT_LIMIT = 50;
+
+    private final Random random = new Random(42);
+
+    private final int tabuCoolDown;
+    private final int iterationsCount;
+
+    public TabuSearchImprover(int tabuCoolDown, int iterationsCount) {
+        this.tabuCoolDown = tabuCoolDown;
+        this.iterationsCount = iterationsCount;
+    }
 
     @Override
-    public List<Integer> findBetterClique(Map<Integer, Set<Integer>> graph, List<Integer> clique, int iterationsCount) {
-        Set<Integer> cliqueSet = new HashSet<>(clique);
-        Queue<Integer> tabuQueue = new ArrayDeque<>();
-        Set<Integer> tabuSet = new HashSet<>();
+    public List<Integer> findBetterClique(Map<Integer, Set<Integer>> graph, List<Integer> clique) {
+        Set<Integer> currentClique = new HashSet<>(clique);
+        Set<Integer> bestClique = new HashSet<>(clique);
+        Tabu tabuAdd = new Tabu(tabuCoolDown);
+        Tabu tabuRemove = new Tabu(tabuCoolDown);
+        int noImprovementCount = 0;
 
         for (int i = 0; i < iterationsCount; ++i) {
-            var candidates = getCandidates(graph, cliqueSet);
+            Pair<Integer, Integer> bestMove = findBestMove(graph, currentClique, bestClique.size(), tabuAdd, tabuRemove);
+            if (bestMove != null) {
+                removeFromClique(currentClique, bestMove.left(), tabuRemove);
+                addToClique(currentClique, bestMove.right(), tabuAdd);
+                if (currentClique.size() > bestClique.size()) {
+                    bestClique = new HashSet<>(currentClique);
+                    noImprovementCount = 0;
+                } else {
+                    noImprovementCount++;
+                }
+            } else {
+                noImprovementCount++;
+            }
 
-            for (var candidate : candidates) {
-                int newSize = cliqueSet.size() + (candidate.left() == -1 ? 1 : 0);
-                if
+            tabuAdd.expire();
+            tabuRemove.expire();
+
+            if (noImprovementCount > NO_IMPROVEMENT_LIMIT) {
+                if (currentClique.size() > 1) {
+                    shuffleClique(currentClique, tabuRemove);
+                    noImprovementCount = 0;
+                }
             }
         }
-        return List.of();
+
+        return new ArrayList<>(bestClique);
+    }
+
+    private Pair<Integer, Integer> findBestMove(
+            Map<Integer, Set<Integer>> graph,
+            Set<Integer> clique,
+            int bestCliqueSize,
+            Tabu tabuAdd,
+            Tabu tabuRemove
+    ) {
+        var candidates = getCandidates(graph, clique);
+        int bestMoveSize = 0;
+        Pair<Integer, Integer> bestMove = null;
+        for (var moveSwap : candidates) {
+            boolean tabu = tabuAdd.contains(moveSwap.right()) || (moveSwap.left() != NO_CANDIDATE && tabuRemove.contains(moveSwap.left()));
+            int newSize = clique.size() + (moveSwap.left() == NO_CANDIDATE ? 1 : 0);
+
+            if ((!tabu || newSize > bestCliqueSize) && (newSize > bestMoveSize)) {
+                bestMoveSize = newSize;
+                bestMove = moveSwap;
+            }
+        }
+        return bestMove;
     }
 
     private List<Pair<Integer, Integer>> getCandidates(Map<Integer, Set<Integer>> graph, Set<Integer> clique) {
         List<Pair<Integer, Integer>> moveSwapCandidates = new ArrayList<>();
         for (var v : graph.keySet()) {
             if (!clique.contains(v) && isConnectedToAllVertices(v, clique, graph)) {
-                moveSwapCandidates.add(new Pair<>(-1, v)); // move
+                moveSwapCandidates.add(new Pair<>(NO_CANDIDATE, v)); // move
             }
         }
 
@@ -40,7 +94,7 @@ public class TabuSearchImprover implements CliqueSearchImprover {
                     Set<Integer> tempClique = new HashSet<>(clique);
                     tempClique.remove(out);
                     if (isConnectedToAllVertices(in, tempClique, graph)) {
-                        moveSwapCandidates.add(new Pair<>(out, in)); // swap
+                        moveSwapCandidates.add(new Pair<>(out, in)); // 1:1 swap
                     }
                 }
             }
@@ -49,8 +103,23 @@ public class TabuSearchImprover implements CliqueSearchImprover {
         return moveSwapCandidates;
     }
 
-    private void addToTabu(Integer v, Queue<Integer> tabuQueue, Set<Integer>) {
+    private void addToClique(Set<Integer> clique, Integer v, Tabu tabuAdd) {
+        clique.add(v);
+        tabuAdd.add(v);
+    }
 
+    private void removeFromClique(Set<Integer> clique, Integer v, Tabu tabuRemove) {
+        if (NO_CANDIDATE != v) {
+            clique.remove(v);
+            tabuRemove.add(v);
+        }
+    }
+
+    private void shuffleClique(Set<Integer> currentClique, Tabu tabuRemove) {
+        List<Integer> cliqueList = new ArrayList<>(currentClique);
+        int randomVertex = cliqueList.get(random.nextInt(cliqueList.size()));
+        currentClique.remove(randomVertex);
+        tabuRemove.add(randomVertex);
     }
 
     private boolean isConnectedToAllVertices(int v, Set<Integer> vertices, Map<Integer, Set<Integer>> graph) {
