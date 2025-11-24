@@ -1,28 +1,37 @@
 package ru.homework.door.lab3.impl;
 
+import ru.homework.door.common.structures.Edge;
 import ru.homework.door.common.structures.Pair;
-import ru.homework.door.lab3.CliqueSearchImprover;
+import ru.homework.door.common.utils.GraphUtils;
+import ru.homework.door.lab2.MaximumCliqueSearcher;
+import ru.homework.door.lab2.dto.MaximumCliqueResult;
 import ru.homework.door.lab3.dto.Tabu;
 
 import java.util.*;
 
-public class TabuSearchImprover implements CliqueSearchImprover {
+public class TabuSearchImprover implements MaximumCliqueSearcher {
 
     private final static int NO_CANDIDATE = -1;
     private final static int NO_IMPROVEMENT_LIMIT = 50;
 
     private final Random random = new Random(42);
 
+    private final MaximumCliqueSearcher cliqueSearcher;
     private final int tabuCoolDown;
     private final int iterationsCount;
 
-    public TabuSearchImprover(int tabuCoolDown, int iterationsCount) {
+    public TabuSearchImprover(MaximumCliqueSearcher cliqueSearcher, int tabuCoolDown, int iterationsCount) {
+        this.cliqueSearcher = cliqueSearcher;
         this.tabuCoolDown = tabuCoolDown;
         this.iterationsCount = iterationsCount;
     }
 
     @Override
-    public List<Integer> findBetterClique(Map<Integer, Set<Integer>> graph, List<Integer> clique) {
+    public MaximumCliqueResult findMaxClique(Integer verticesCount, List<Edge> edges, double alpha, int maxIterations) {
+        var cliqueResult = cliqueSearcher.findMaxClique(verticesCount, edges, alpha, maxIterations);
+        var clique = cliqueResult.clique();
+        var graph = GraphUtils.buildGraph(verticesCount, edges);
+
         Set<Integer> currentClique = new HashSet<>(clique);
         Set<Integer> bestClique = new HashSet<>(clique);
         Tabu tabuAdd = new Tabu(tabuCoolDown);
@@ -49,13 +58,13 @@ public class TabuSearchImprover implements CliqueSearchImprover {
 
             if (noImprovementCount > NO_IMPROVEMENT_LIMIT) {
                 if (currentClique.size() > 1) {
-                    shuffleClique(currentClique, tabuRemove);
+                    dropRandomVertex(currentClique, tabuRemove);
                     noImprovementCount = 0;
                 }
             }
         }
 
-        return new ArrayList<>(bestClique);
+        return new MaximumCliqueResult(new ArrayList<>(bestClique));
     }
 
     private Pair<Integer, Integer> findBestMove(
@@ -115,7 +124,7 @@ public class TabuSearchImprover implements CliqueSearchImprover {
         }
     }
 
-    private void shuffleClique(Set<Integer> currentClique, Tabu tabuRemove) {
+    private void dropRandomVertex(Set<Integer> currentClique, Tabu tabuRemove) {
         List<Integer> cliqueList = new ArrayList<>(currentClique);
         int randomVertex = cliqueList.get(random.nextInt(cliqueList.size()));
         currentClique.remove(randomVertex);

@@ -4,7 +4,6 @@ import ru.homework.door.common.structures.Edge;
 import ru.homework.door.common.utils.GraphUtils;
 import ru.homework.door.lab2.MaximumCliqueSearcher;
 import ru.homework.door.lab2.dto.MaximumCliqueResult;
-import ru.homework.door.lab3.CliqueSearchImprover;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,11 +12,6 @@ public class GreedyRandomizedCliqueSearcher implements MaximumCliqueSearcher {
 
     @Override
     public MaximumCliqueResult findMaxClique(Integer verticesCount, List<Edge> edges, double alpha, int maxIterations) {
-        return findMaxClique(verticesCount, edges, alpha, maxIterations, null);
-    }
-
-    @Override
-    public MaximumCliqueResult findMaxClique(Integer verticesCount, List<Edge> edges, double alpha, int maxIterations, CliqueSearchImprover improver) {
         if (alpha < 0 || alpha > 1) throw new IllegalArgumentException("Alpha should be in range: [0;1]");
         Map<Integer, Set<Integer>> graph = GraphUtils.buildGraph(verticesCount, edges);
         Random random = new Random();
@@ -25,10 +19,6 @@ public class GreedyRandomizedCliqueSearcher implements MaximumCliqueSearcher {
         List<Integer> maxClique = Collections.emptyList();
         for (int i = 0 ; i < maxIterations; ++i) {
             List<Integer> clique = findClique(graph, alpha, random);
-
-            if (improver != null) {
-                clique = improver.findBetterClique(graph, clique);
-            }
 
             if (clique.size() > maxClique.size()) {
                 maxClique = clique;

@@ -19,35 +19,39 @@ import static ru.homework.door.common.GraphInputParser.parseGraphFile;
 
 class TabuCliqueSearcherTest {
 
-    private MaximumCliqueSearcher cliqueSearcher = new GreedyRandomizedCliqueSearcher();
+    private MaximumCliqueSearcher cliqueSearcher = new TabuSearchImprover(
+            new GreedyRandomizedCliqueSearcher(),
+            2,
+            2000
+    );
 
     private static Stream<Arguments> provideFilesToTest() {
         return Stream.of(
-                Arguments.of("brock200_1.clq", 20),
-                Arguments.of("brock200_2.clq", 10),
-                Arguments.of("brock200_3.clq", 14),
-                Arguments.of("brock200_4.clq", 16),
-                Arguments.of("brock400_1.clq", 24),
-                Arguments.of("brock400_2.clq", 25),
-                Arguments.of("brock400_3.clq", 24),
-                Arguments.of("brock400_4.clq", 24),
-                Arguments.of("C125.9.clq", 34),
-                Arguments.of("gen200_p0.9_44.clq", 40),
-                Arguments.of("gen200_p0.9_55.clq", 48),
-                Arguments.of("hamming8-4.clq", 16),
-                Arguments.of("johnson16-2-4.clq", 8),
-                Arguments.of("johnson8-2-4.clq", 4),
-                Arguments.of("keller4.clq", 11),
-                Arguments.of("MANN_a27.clq", 126),
-                Arguments.of("MANN_a9.clq", 16),
-                Arguments.of("p_hat1000-1.clq", 10),
-                Arguments.of("p_hat1000-2.clq", 46),
-                Arguments.of("p_hat1500-1.clq", 11),
-                Arguments.of("p_hat300-3.clq", 34),
-                Arguments.of("p_hat500-3.clq", 49),
-                Arguments.of("san1000.clq", 10),
-                Arguments.of("sanr200_0.9.clq", 41),
-                Arguments.of("sanr400_0.7.clq", 21)
+                Arguments.of("brock200_1.clq", 21),      // изменилось: было 20
+                Arguments.of("brock200_2.clq", 12),      // изменилось: было 10
+                Arguments.of("brock200_3.clq", 15),      // изменилось: было 14
+                Arguments.of("brock200_4.clq", 17),      // изменилось: было 16
+                Arguments.of("brock400_1.clq", 25),      // изменилось: было 24
+                Arguments.of("brock400_2.clq", 25),      // не изменилось
+                Arguments.of("brock400_3.clq", 30),      // изменилось: было 24
+                Arguments.of("brock400_4.clq", 25),      // изменилось: было 24
+                Arguments.of("C125.9.clq", 34),          // не изменилось
+                Arguments.of("gen200_p0.9_44.clq", 44),  // изменилось: было 40
+                Arguments.of("gen200_p0.9_55.clq", 55),  // изменилось: было 48
+                Arguments.of("hamming8-4.clq", 16),      // не изменилось
+                Arguments.of("johnson16-2-4.clq", 8),    // не изменилось
+                Arguments.of("johnson8-2-4.clq", 4),     // не изменилось
+                Arguments.of("keller4.clq", 11),         // не изменилось
+                Arguments.of("MANN_a27.clq", 126),       // не изменилось
+                Arguments.of("MANN_a9.clq", 16),         // не изменилось
+                Arguments.of("p_hat1000-1.clq", 10),     // не изменилось
+                Arguments.of("p_hat1000-2.clq", 46),     // не изменилось
+                Arguments.of("p_hat1500-1.clq", 11),     // не изменилось
+                Arguments.of("p_hat300-3.clq", 36),      // изменилось: было 34
+                Arguments.of("p_hat500-3.clq", 50),      // изменилось: было 49
+                Arguments.of("san1000.clq", 10),         // не изменилось
+                Arguments.of("sanr200_0.9.clq", 42),     // изменилось: было 41
+                Arguments.of("sanr400_0.7.clq", 21)      // не изменилось
         );
     }
 
@@ -61,9 +65,8 @@ class TabuCliqueSearcherTest {
         MaximumCliqueResult result = cliqueSearcher.findMaxClique(
                 graphData.verticesCount,
                 graphData.edges,
-                0.5,  // alpha параметр
-                1000,  // maxIterations параметр,
-                new TabuSearchImprover(2, 5000)
+                0.2,  // alpha параметр
+                1000  // maxIterations параметр,
         );
 
         long endTime = System.nanoTime();
