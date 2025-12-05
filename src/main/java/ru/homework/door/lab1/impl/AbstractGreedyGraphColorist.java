@@ -26,7 +26,7 @@ public abstract class AbstractGreedyGraphColorist implements GraphColorist {
 
     protected abstract SequencedCollection<Integer> makeOrdering(final Map<Integer, Set<Integer>> graph);
 
-    private Map<Integer, Integer> colorVertices(
+    public Map<Integer, Integer> colorVertices(
             SequencedCollection<Integer> ordering,
             final Map<Integer, Set<Integer>> graph
     ) {
@@ -51,7 +51,6 @@ public abstract class AbstractGreedyGraphColorist implements GraphColorist {
         }
         return color;
     }
-
 
     private List<List<Integer>> getVerticesGroupedByColors(Map<Integer, Integer> vertexColor) {
         return new ArrayList<>(

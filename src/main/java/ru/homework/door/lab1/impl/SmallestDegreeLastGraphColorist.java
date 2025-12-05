@@ -10,7 +10,7 @@ import static ru.homework.door.common.utils.GraphUtils.copyGraph;
 public class SmallestDegreeLastGraphColorist extends AbstractGreedyGraphColorist {
 
     @Override
-    protected SequencedCollection<Integer> makeOrdering(final Map<Integer, Set<Integer>> graph) {
+    public SequencedCollection<Integer> makeOrdering(final Map<Integer, Set<Integer>> graph) {
         var copyGraph = copyGraph(graph);
         Deque<Integer> smallestDegreeLastOrdering = new ArrayDeque<>();
 
