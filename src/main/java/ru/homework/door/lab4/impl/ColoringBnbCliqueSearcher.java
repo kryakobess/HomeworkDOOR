@@ -19,12 +19,20 @@ public class ColoringBnbCliqueSearcher implements MaximumCliqueSearcher {
 
     @Override
     public MaximumCliqueResult findMaxClique(Integer verticesCount, List<Edge> edges, double alpha, int maxIterations) {
+        long startTime = System.nanoTime();
+
         List<Integer> clique = initialHeuristic.findMaxClique(verticesCount, edges, alpha, maxIterations).clique();
+
+        long heuristicEndTime = System.nanoTime();
+        System.out.printf("Время выполнения начальной эвристики = %.5f сек\n", (heuristicEndTime - startTime) / 1_000_000_000.0);
+
         Map<Integer, Set<Integer>> graph = GraphUtils.buildGraph(verticesCount, edges);
         List<Integer> pardalosOrder = new ArrayList<>(smallestDegreeLastColorist.makeOrdering(graph)).reversed();
 
         findBestClique(pardalosOrder, clique, new ArrayList<>(), graph);
 
+        long bnbEndTime = System.nanoTime();
+        System.out.printf("Время выполнения метода ветвей и границ = %.5f сек\n", (bnbEndTime - heuristicEndTime) / 1_000_000_000.0);
         return new MaximumCliqueResult(clique);
     }
 
