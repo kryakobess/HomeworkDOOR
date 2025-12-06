@@ -50,7 +50,7 @@ public class ColoringBnbCliqueSearcher implements MaximumCliqueSearcher {
             var candidatesInColorsOrder = getCandidatesInColorsOrder(vertexColors);
 
             var v = candidatesInColorsOrder.getFirst().getKey();
-            var color = candidatesInColorsOrder.getFirst().getKey();
+            var color = candidatesInColorsOrder.getFirst().getValue();
             if (currentClique.size() + color <= bestClique.size()) {
                 return;
             }
